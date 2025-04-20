@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "273735570446",
+    "project_id": "carbonhero-95e2c",
+    "storage_bucket": "carbonhero-95e2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273735570446:android:e4343dfeab0f1c199c585f",
+        "android_client_info": {
+          "package_name": "com.example.carbonhero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_3kpLs9tOO27mQAGpG1_yym0S415Zjc0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
