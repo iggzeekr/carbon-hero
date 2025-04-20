@@ -19,12 +19,15 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserDataScreen(navController: NavController) {
     val auth = Firebase.auth
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         if (auth.currentUser == null) {
@@ -63,14 +66,31 @@ fun UserDataScreen(navController: NavController) {
     }
 
     val questions = listOf(
-        Question.SingleChoice("Beslenme tercihiniz nedir?", listOf("Vegan", "Vejetaryen", "Her şey yerim", "Çoğunlukla et ağırlıklı"), "dietPreference"),
-        Question.SingleChoice("Hangi yakıt tipini kullanıyorsunuz?", listOf("Benzin", "Dizel", "LPG", "Elektrik", "Hibrit"), "fuelType"),
-        Question.TextInput("Araç markanız nedir?", "Örn: Toyota", "carMake"),
-        Question.TextInput("Araç modeliniz nedir?", "Örn: Corolla", "carModel"),
-        Question.NumberInput("Aylık ortalama kaç km yol yapıyorsunuz?", "Km cinsinden giriniz", "monthlyDrivingDistance"),
-        Question.SingleChoice("Ev tipiniz nedir?", listOf("Apartman Dairesi", "Müstakil Ev", "Villa", "Stüdyo Daire"), "houseType"),
-        Question.SingleChoice("Isıtma sisteminiz nedir?", listOf("Doğalgaz", "Elektrikli Isıtıcı", "Soba", "Merkezi Sistem"), "heatingSystem"),
-        Question.YesNo("Geri dönüşüm yapıyor musunuz?", "recycling")
+        Question.SingleChoice("What is your gender?", listOf("Female", "Male"), "gender"),
+        Question.SingleChoice("What is your diet preference?", listOf("Vegan", "Vegetarian", "Omnivore", "Meat-heavy"), "dietPreference"),
+        Question.SingleChoice("What type of fuel do you use?", listOf("Gasoline", "Diesel", "Electric", "Hybrid", "LPG"), "fuelType"),
+        Question.SingleChoice("What is your car brand?", listOf(
+            "Toyota", "Honda", "Volkswagen", "Ford", "BMW", 
+            "Mercedes", "Audi", "Hyundai", "Kia", "Nissan", 
+            "Chevrolet", "Other"
+        ), "carMake"),
+        Question.SingleChoice("What is your car model type?", listOf(
+            "Sedan", "Hatchback", "SUV", "Crossover", 
+            "Station Wagon", "Pickup", "Minivan", "Sports Car", "Other"
+        ), "carModel"),
+        Question.SingleChoice("How many kilometers do you drive monthly?", listOf(
+            "0-500 km", "501-1000 km", "1001-2000 km", 
+            "2001-3000 km", "3000+ km"
+        ), "monthlyDrivingDistance"),
+        Question.SingleChoice("What type of home do you live in?", listOf(
+            "Apartment", "Detached House", "Villa", "Studio", 
+            "Townhouse", "Duplex"
+        ), "houseType"),
+        Question.SingleChoice("What is your heating system?", listOf(
+            "Natural Gas", "Electric Heater", "Heat Pump", 
+            "Central Heating", "Solar Heating", "Wood/Pellet Stove"
+        ), "heatingSystem"),
+        Question.YesNo("Do you recycle?", "recycling")
     )
 
     CarbonHeroBackground {
@@ -88,7 +108,8 @@ fun UserDataScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.Center),
+                        .align(Alignment.Center)
+                        .verticalScroll(scrollState),
                     colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -124,75 +145,6 @@ fun UserDataScreen(navController: NavController) {
                                     }
                                 }
                             }
-
-                            is Question.TextInput -> {
-                                Text(question.text, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
-                                OutlinedTextField(
-                                    value = (userData[question.key] as? String) ?: "",
-                                    onValueChange = { userData[question.key] = it },
-                                    label = { Text(question.hint) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    keyboardOptions = KeyboardOptions(
-                                        imeAction = ImeAction.Done,
-                                        keyboardType = KeyboardType.Text,
-                                        autoCorrect = true
-                                    ),
-                                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                                    singleLine = true,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray
-                                    )
-                                )
-                                Button(
-                                    onClick = {
-                                        focusManager.clearFocus()
-                                        if ((userData[question.key] as? String)?.isNotBlank() == true) {
-                                            if (currentQuestionIndex < questions.size - 1) currentQuestionIndex++ else submitData(userData, navController)
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                                ) {
-                                    Text("Devam Et")
-                                }
-                            }
-
-                            is Question.NumberInput -> {
-                                Text(question.text, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
-                                OutlinedTextField(
-                                    value = (userData[question.key] as? String) ?: "",
-                                    onValueChange = {
-                                        if (it.all { char -> char.isDigit() || char == '.' }) userData[question.key] = it
-                                    },
-                                    label = { Text(question.hint) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    keyboardOptions = KeyboardOptions(
-                                        imeAction = ImeAction.Done,
-                                        keyboardType = KeyboardType.Number,
-                                        autoCorrect = false
-                                    ),
-                                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                                    singleLine = true,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray
-                                    )
-                                )
-                                Button(
-                                    onClick = {
-                                        focusManager.clearFocus()
-                                        if ((userData[question.key] as? String)?.isNotBlank() == true) {
-                                            if (currentQuestionIndex < questions.size - 1) currentQuestionIndex++ else submitData(userData, navController)
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                                ) {
-                                    Text("Devam Et")
-                                }
-                            }
-
                             is Question.YesNo -> {
                                 Text(question.text, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -205,7 +157,7 @@ fun UserDataScreen(navController: NavController) {
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                                     ) {
-                                        Text("Evet")
+                                        Text("Yes")
                                     }
                                     Button(
                                         onClick = {
@@ -216,8 +168,43 @@ fun UserDataScreen(navController: NavController) {
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
                                     ) {
-                                        Text("Hayır")
+                                        Text("No")
                                     }
+                                }
+                            }
+                            is Question.TextInput -> {
+                                Text(question.text, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
+                                OutlinedTextField(
+                                    value = userData[question.key]?.toString() ?: "",
+                                    onValueChange = { 
+                                        userData[question.key] = it
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color(0xFF4CAF50),
+                                        unfocusedBorderColor = Color.Gray
+                                    ),
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = {
+                                            focusManager.clearFocus()
+                                            if (userData[question.key]?.toString()?.isNotBlank() == true) {
+                                                if (currentQuestionIndex < questions.size - 1) currentQuestionIndex++
+                                            }
+                                        }
+                                    )
+                                )
+                                Button(
+                                    onClick = {
+                                        focusManager.clearFocus()
+                                        if (userData[question.key]?.toString()?.isNotBlank() == true) {
+                                            if (currentQuestionIndex < questions.size - 1) currentQuestionIndex++
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                                ) {
+                                    Text("Next")
                                 }
                             }
                         }
@@ -233,7 +220,7 @@ fun UserDataScreen(navController: NavController) {
                         .padding(bottom = 16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                 ) {
-                    Text("Geri")
+                    Text("Back")
                 }
             }
         }
@@ -242,9 +229,8 @@ fun UserDataScreen(navController: NavController) {
 
 sealed class Question {
     data class SingleChoice(val text: String, val options: List<String>, val key: String) : Question()
-    data class TextInput(val text: String, val hint: String, val key: String) : Question()
-    data class NumberInput(val text: String, val hint: String, val key: String) : Question()
     data class YesNo(val text: String, val key: String) : Question()
+    data class TextInput(val text: String, val key: String) : Question()
 }
 
 private fun submitData(userData: Map<String, Any>, navController: NavController) {
